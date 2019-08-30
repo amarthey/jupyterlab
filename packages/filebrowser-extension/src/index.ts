@@ -85,6 +85,12 @@ namespace CommandIDs {
 
   export const createNewDirectory = 'filebrowser:create-new-directory';
 
+  export const createNewNotebook = 'filebrowser:create-new-notebook';
+
+  export const createNewTextFile = 'filebrowser:create-new-text-file';
+
+  export const createNewMarkdown = 'filebrowser:create-new-markdown';
+
   export const rename = 'filebrowser:rename';
 
   // For main browser only.
@@ -733,6 +739,69 @@ function addCommands(
     }
   });
 
+  const createNewNotebook = (cwd: string, kernelName?: string) => {
+    return commands
+      .execute('docmanager:new-untitled', { path: cwd, type: 'notebook' })
+      .then(model => {
+        return commands.execute('docmanager:open', {
+          path: model.path,
+          factory: 'Notebook',
+          kernel: { name: kernelName }
+        });
+      });
+  };
+
+  const createNewFile = (cwd: string, ext: string = 'txt') => {
+    return commands
+      .execute('docmanager:new-untitled', {
+        path: cwd,
+        type: 'file',
+        ext
+      })
+      .then(model => {
+        return commands.execute('docmanager:open', {
+          path: model.path,
+          factory: 'Editor'
+        });
+      });
+  };
+
+  // Add a command for creating a new notebook.
+  commands.addCommand(CommandIDs.createNewNotebook, {
+    label: 'Notebook',
+    caption: 'Create a new notebook',
+    iconClass: 'jp-MaterialIcon jp-NotebookIcon',
+    execute: args => {
+      const cwd =
+        (args['cwd'] as string) ||
+        (factory ? factory.defaultBrowser.model.path : '');
+      const kernelName = (args['kernelName'] as string) || '';
+      return createNewNotebook(cwd, kernelName);
+    }
+  });
+
+  // Add a command for creating a new text file.
+  commands.addCommand(CommandIDs.createNewTextFile, {
+    label: 'Text File',
+    caption: 'Create a new text file',
+    iconClass: 'jp-MaterialIcon jp-TextEditorIcon',
+    execute: args => {
+      let cwd = args['cwd'] || factory.defaultBrowser.model.path;
+      return createNewFile(cwd as string);
+    }
+  });
+
+  // Add a command for creating a new Markdown file.
+  commands.addCommand(CommandIDs.createNewMarkdown, {
+    label: 'Markdown File',
+    caption: 'Create a new markdown file',
+    iconClass: 'jp-MaterialIcon jp-MarkdownIcon',
+    execute: args => {
+      let cwd = args['cwd'] || factory.defaultBrowser.model.path;
+      return createNewFile(cwd as string, 'md');
+    }
+  });
+
   if (mainMenu) {
     mainMenu.settingsMenu.addGroup(
       [{ command: CommandIDs.toggleNavigateToCurrentDirectory }],
@@ -830,10 +899,22 @@ function addCommands(
     rank: 1
   });
 
+  const createFileMenu = new Menu({ commands });
+  createFileMenu.title.label = 'New File';
+  createFileMenu.addItem({ command: CommandIDs.createNewNotebook });
+  createFileMenu.addItem({ command: CommandIDs.createNewTextFile });
+  createFileMenu.addItem({ command: CommandIDs.createNewMarkdown });
+  app.contextMenu.addItem({
+    type: 'submenu',
+    submenu: createFileMenu,
+    selector: selectorContent,
+    rank: 2
+  });
+
   app.contextMenu.addItem({
     command: CommandIDs.paste,
     selector: selectorContent,
-    rank: 2
+    rank: 3
   });
 
   app.contextMenu.addItem({
@@ -843,7 +924,7 @@ function addCommands(
   });
 
   const openWith = new OpenWithMenu({ commands });
-  openWith.title.label = 'Open With';
+  openWith.title.label = 'Open Withhh';
   app.contextMenu.addItem({
     type: 'submenu',
     submenu: openWith,
