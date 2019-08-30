@@ -924,7 +924,7 @@ function addCommands(
   });
 
   const openWith = new OpenWithMenu({ commands });
-  openWith.title.label = 'Open Withhh';
+  openWith.title.label = 'Open With';
   app.contextMenu.addItem({
     type: 'submenu',
     submenu: openWith,
